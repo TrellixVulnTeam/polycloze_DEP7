@@ -169,6 +169,11 @@ export async function fetchWordList(db: Database): Promise<void> {
     const l2 = getL2().code;
     const url = resolve(`/share/words/${l1}-${l2}.csv`);
 
+    const response = await fetch(url.href, {
+        mode: "cors" as RequestMode,
+    });
+    const etag = response.headers.get("ETag") || "";
+
     const storeNames: StoreName[] = [
         "data-version",
         "acknowledged-reviews",
@@ -181,10 +186,6 @@ export async function fetchWordList(db: Database): Promise<void> {
     const seenWords = tx.objectStore("seen-words");
     const unseenWords = tx.objectStore("unseen-words");
 
-    const response = await fetch(url.href, {
-        mode: "cors" as RequestMode,
-    });
-    const etag = response.headers.get("ETag") || "";
     const version = (await dataVersion.get("etag"))?.etag || "";
     if (etag === version) {
         // Don't have do anything if word list is up-to-date.
